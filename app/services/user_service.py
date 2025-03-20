@@ -5,10 +5,9 @@ from app.utils.hash import hash_password
 
 
 def create_user(user: UserCreate):
-    id = len(user_repository.get_all_users()) + 1
     hashed_senha = hash_password(user.senha)
-    new_user = User(id=id, nome=user.nome, email=user.email, senha=hashed_senha)
-    return user_repository.create_user(new_user)
+    user.senha = hashed_senha
+    return user_repository.create_user(user)
 
 
 def get_all():

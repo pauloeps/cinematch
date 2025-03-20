@@ -1,9 +1,12 @@
 from app.models.user import User
+from app.schemas.user import UserCreate
 
 users = []
 
 
-def create_user(user: User):
+def create_user(user: UserCreate):
+    id = len(users) + 1
+    user.id = id
     users.append(user)
     return user
 
