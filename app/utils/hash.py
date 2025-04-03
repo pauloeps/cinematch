@@ -7,5 +7,5 @@ def hash_password(pw: str) -> str:
     return hashed_pw
 
 
-def check_pasword(pw: str, hashed_pw: str) -> bool:
-    return bcrypt.checkpw(pw.encode(), hashed_pw.encode())
+def verify_password(pw: str, hashed_pw: str) -> bool:
+    return bcrypt.checkpw(pw.encode(), hashed_pw)

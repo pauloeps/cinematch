@@ -22,6 +22,13 @@ def get_user(user_id: int):
     return None
 
 
+def get_user_by_email(email: str):
+    for user in users:
+        if user.email == email:
+            return user
+    return None
+
+
 def update_user(user_id: int, user: User):
     for i, u in enumerate(users):
         if u.id == user_id:
