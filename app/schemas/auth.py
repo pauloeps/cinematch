@@ -2,12 +2,13 @@ from pydantic import BaseModel, EmailStr
 
 
 class AuthLogin(BaseModel):
-    email: EmailStr
-    senha: str
+    username: EmailStr
+    password: str
 
 
 class AuthResponse(BaseModel):
     access_token: str
+    token_type: str
 
 
 class LogoutResponse(BaseModel):

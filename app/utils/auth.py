@@ -1,7 +1,10 @@
 import jwt
 import redis
 from datetime import datetime, timedelta, timezone
+from fastapi import HTTPException, status, Depends
+from typing import Annotated
 
+from oauth import oauth2_scheme
 
 # Cliente do Redis para blacklist do token
 redis_client = redis.Redis(host="localhost", port=6379, db=0, socket_timeout=5)
@@ -21,13 +24,26 @@ def create_access_token(id: int) -> str:
     return encoded_jwt
 
 
+def decode_token(token: str):
+    return jwt.decode(token, SECRET_KEY, algorithms=[ALGORITHM])
+
+
+def get_allowwed_token(token: Annotated[str, Depends(oauth2_scheme)]) -> str:
+    if redis_client.get(f"blacklist:{token}"):
+        raise HTTPException(
+            status_code=status.HTTP_401_UNAUTHORIZED,
+            detail="Token inválido",
+        )
+    return token
+
+
 def verify_access_token(token: str) -> bool:
     try:
         # Verifica se está na blacklist
         if redis_client.get(f"blacklist:{token}"):
             return False
 
-        payload = jwt.decode(token, SECRET_KEY, algorithms=[ALGORITHM])
+        decode_token(token)
         return True
     except jwt.ExpiredSignatureError:
         return False
@@ -38,7 +54,7 @@ def verify_access_token(token: str) -> bool:
 def invalidate_token(token: str) -> bool:
     try:
         # Adiciona o token na blacklist com data de expiração
-        payload = jwt.decode(token, SECRET_KEY, algorithms=[ALGORITHM])
+        payload = decode_token(token)
         exp = payload.get("exp")
         if exp:
             ttl = exp - int(datetime.now(tz=timezone.utc).timestamp())
