@@ -1,46 +1,29 @@
-from fastapi import APIRouter, HTTPException
-from app.services.user_service import (
-    create_user,
-    get_all,
-    get_user,
-    update_user,
-    delete_user,
-)
+from fastapi import APIRouter, Depends
+from typing import Annotated
+
+from app.services.user_service import update_user, get_current_user
+
 from app.schemas.user import UserCreate, UserResponse
+from app.models.user import User
 
 router = APIRouter()
 
 
-@router.post("/", response_model=UserResponse)
-def register_user(user: UserCreate):
-    return create_user(user)
+@router.get("/me")
+async def read_users_me(
+    current_user: Annotated[User, Depends(get_current_user)],
+):
+    return UserResponse(
+        id=current_user.id, nome=current_user.nome, email=current_user.email
+    )
 
 
-@router.get("/", response_model=list[UserResponse])
-def get_all_users():
-    return get_all()
-
-
-@router.get("/{user_id}", response_model=UserResponse)
-def get_user_by_id(user_id: int):
-    user = get_user(user_id)
-    if not user:
-        raise HTTPException(status_code=404, detail="User not found")
-    return user
-
-
-@router.put("/{user_id}", response_model=UserResponse)
-def update_user_by_id(user_id: int, user: UserCreate):
-    existing_user = get_user(user_id)
-    if not existing_user:
-        raise HTTPException(status_code=404, detail="User not found")
-    return update_user(user_id, user)
-
-
-@router.delete("/{user_id}")
-def delete_user_by_id(user_id: int):
-    existing_user = get_user(user_id)
-    if not existing_user:
-        raise HTTPException(status_code=404, detail="User not found")
-    delete_user(user_id)
-    return {"message": "User deleted successfully"}
+@router.put("/me", response_model=UserResponse)
+def update_users_me(
+    current_user: Annotated[User, Depends(get_current_user)],
+    user: UserCreate,
+):
+    updated_user = update_user(current_user, user)
+    return UserResponse(
+        id=updated_user.id, nome=updated_user.nome, email=updated_user.email
+    )
