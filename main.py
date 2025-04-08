@@ -1,13 +1,24 @@
 from fastapi import FastAPI, Request
 import time
+from fastapi.middleware.cors import CORSMiddleware
 
 from app.api.endpoints import user, movie, auth
 
 # O import não utilizado abaixo é necessário, não remover!
 from oauth import oauth2_scheme
 
+origins = [
+    "http://localhost:5173",
+]
 
 app = FastAPI(title="CineMatch API", version="1.0")
+app.add_middleware(
+    CORSMiddleware,
+    allow_origins=origins,
+    allow_credentials=True,
+    allow_methods=["*"],
+    allow_headers=["*"],
+)
 
 
 # Exemplo de middleware apenas pra mostar como funciona segundo a documentação
